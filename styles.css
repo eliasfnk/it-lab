@@ -57,16 +57,20 @@ header {
     font-size: 20px;
 }
 
-#ef-logo {
-    width: 100px;
-}
+@media (min-width: 420px) {
 
-#ef-logo circle {
-    fill: #fff;
-}
+    #ef-logo {
+        width: 100px;
+    }
+    
+    #ef-logo circle {
+        fill: #fff;
+    }
+    
+    #ef-logo g {
+        fill: var(--blue-3);
+    }
 
-#ef-logo g {
-    fill: var(--blue-3);
 }
 
 
@@ -153,6 +157,7 @@ main {
 button {
     font-size: 16px;
     padding: 15px 30px;
+    margin: 0 2px;
     color: #fff;
     background-color: var(--blue-3);
     border: 2px solid var(--blue-3);
@@ -188,4 +193,12 @@ footer a {
 
 footer a:hover {
     border-bottom: 0;
+}
+
+@media (max-width: 480px) {
+
+    footer span:not(:first-child) {
+        display: none;
+    }
+
 }
