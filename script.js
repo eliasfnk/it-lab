@@ -120,6 +120,7 @@ const minesweeper = {
         });
 
         cell.addEventListener('touchstart', (event) => {
+            alert('hallooooo');
             this.cellTouchStartHandler(event);
         });
         cell.addEventListener('touchend', (event) => {
