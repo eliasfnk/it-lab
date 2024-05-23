@@ -177,19 +177,14 @@ const minesweeper = {
     },
 
     cellTouchStartHandler(event) {
-        //event.preventDefault();
-        this.testvar = new Date.getTime();
-        this.touchStartTime = new Date.getTime();
-        alert(this.touchStartTime);
-        alert(touchStartTime);
-        alert(new Date.getTime());
-        alert(this.testvar);
+        event.preventDefault();
+        this.touchStartTime = new Date().getTime();
     },
 
     cellTouchEndHandler(event) {
         event.preventDefault();
-        const abc = new Date.getTime() - this.start;
-        alert(abc);
+        const touchDuration = new Date().getTime() - this.touchStartTime;
+        alert(touchDuration);
     },
 
 };
