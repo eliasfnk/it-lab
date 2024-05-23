@@ -1,0 +1,12 @@
+<svg id="ef-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+    <circle cx="500" cy="500" r="500" fill="#FFFFFF"/>
+    <g fill="#0080FF">
+        <rect x="430" y="240" width="50"  height="520"/>
+        <rect x="190" y="240" width="265" height="50" />
+        <rect x="190" y="475" width="265" height="50" />
+        <rect x="190" y="710" width="265" height="50" />
+        <rect x="520" y="240" width="50"  height="520"/>
+        <rect x="545" y="240" width="265" height="50" />
+        <rect x="545" y="475" width="265" height="50" />
+    </g>
+</svg>

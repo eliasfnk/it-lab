@@ -59,16 +59,11 @@ header {
 
 @media (min-width: 420px) {
 
-    #ef-logo {
-        width: 100px;
-    }
-    
-    #ef-logo circle {
-        fill: #fff;
-    }
-    
-    #ef-logo g {
-        fill: var(--blue-3);
+    header {
+        background-image: url(images/logo.svg);
+        background-size: 100px;
+        background-position: right 20px center;
+        background-repeat: no-repeat;
     }
 
 }
@@ -88,8 +83,6 @@ main {
 }
 
 .cell {
-    width: calc(100% / 9 - 2px);
-    height: calc(100% / 9 - 2px);
     flex-shrink: 0;
     background-color: var(--blue-5);
     border: 1px solid var(--grey-3);
@@ -156,6 +149,7 @@ main {
 
 button {
     font-size: 16px;
+    text-transform: capitalize;
     padding: 15px 30px;
     margin: 0 2px;
     color: #fff;
