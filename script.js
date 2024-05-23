@@ -184,6 +184,7 @@ const minesweeper = {
     cellTouchEndHandler(event) {
         event.preventDefault();
         const abc = new Date.getTime() - this.start;
+        alert(abc);
     },
 
 };
