@@ -177,7 +177,9 @@ const minesweeper = {
     },
 
     cellTouchStartHandler(event) {
+        alert('test1');
         event.preventDefault();
+        alert('test');
         this.testvar = new Date.getTime();
         alert(this.testvar);
     },
