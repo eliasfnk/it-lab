@@ -184,7 +184,11 @@ const minesweeper = {
     cellTouchEndHandler(event) {
         event.preventDefault();
         const touchDuration = new Date().getTime() - this.touchStartTime;
-        alert(touchDuration);
+        if (touchDuration < 500) {
+            this.cellLeftClickHandler(event);
+        } else {
+            this.cellRightClickHandler(event);
+        }
     },
 
 };
