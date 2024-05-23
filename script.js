@@ -182,6 +182,10 @@ const minesweeper = {
         alert('event function start called');
         event.preventDefault();
         this.testvar = new Date.getTime();
+        this.touchStartTime = new Date.getTime();
+        alert(this.touchStartTime);
+        alert(touchStartTime);
+        alert(new Date.getTime());
         alert(this.testvar);
     },
 
