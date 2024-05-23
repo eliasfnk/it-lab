@@ -180,7 +180,7 @@ const minesweeper = {
 
     cellTouchStartHandler(event) {
         alert('event function start called');
-        event.preventDefault();
+        //event.preventDefault();
         this.testvar = new Date.getTime();
         this.touchStartTime = new Date.getTime();
         alert(this.touchStartTime);
