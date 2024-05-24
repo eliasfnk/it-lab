@@ -74,6 +74,7 @@ header {
 /* ------------------------------- */
 
 main {
+    position: relative;
     height: calc(10 * 100% / 18);
     display: flex;
     flex-wrap: wrap;
@@ -92,45 +93,77 @@ main {
     background-color: var(--grey-4);
 }
 
-.symbol-1, .symbol-2, .symbol-3, .symbol-4, .symbol-5, .symbol-6, .symbol-7, .symbol-8, .symbol-f, .symbol-m {
+.symbol-1, .symbol-2, .symbol-3, .symbol-4, .symbol-5, .symbol-6, .symbol-7, .symbol-8, .symbol-f.covered, .symbol-m {
     background-size: 1000%;
     background-image: url(images/symbols.svg);
 }
 
+.symbol-1 {
+    background-position: calc(100% * 0 / 9);
+}
+
 .symbol-2 {
-    background-position: calc(100% * 1 / 9)
+    background-position: calc(100% * 1 / 9);
 }
 
 .symbol-3 {
-    background-position: calc(100% * 2 / 9)
+    background-position: calc(100% * 2 / 9);
 }
 
 .symbol-4 {
-    background-position: calc(100% * 3 / 9)
+    background-position: calc(100% * 3 / 9);
 }
 
 .symbol-5 {
-    background-position: calc(100% * 4 / 9)
+    background-position: calc(100% * 4 / 9);
 }
 
 .symbol-6 {
-    background-position: calc(100% * 5 / 9)
+    background-position: calc(100% * 5 / 9);
 }
 
 .symbol-7 {
-    background-position: calc(100% * 6 / 9)
+    background-position: calc(100% * 6 / 9);
 }
 
 .symbol-8 {
     background-position: calc(100% * 7 / 9);
 }
 
-.symbol-f {
+.symbol-f.covered {
     background-position: calc(100% * 8 / 9);
 }
 
 .symbol-m {
     background-position: calc(100% * 9 / 9);
+}
+
+#mine-hit {
+    background-color: var(--peach-fuzz);
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+#overlay div {
+    padding: 16px 32px;
+    border-radius: 16px;
+    background-color: var(--blue-4);
+    font-size: 48px;
+}
+
+#overlay div:hover {
+    opacity: 0.2;
+    transition: 0.2s;
 }
 
 

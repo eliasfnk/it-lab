@@ -4,7 +4,10 @@ window.addEventListener('load', () => {
 
 const minesweeper = {
     
+
+
     init() {
+        this.logic = localLogic;
         this.generateBody();
         this.newGame('small');
     },
@@ -107,11 +110,19 @@ const minesweeper = {
     createCell(row, col) {
         const cell = document.createElement('div');
         cell.classList.add('cell', 'covered');
+
         cell.dataset.x = col;
         cell.dataset.y = row;
+
         cell.style.width = `calc(100% / ${this.size} - 2px)`;
         cell.style.height = `calc(100% / ${this.size} - 2px)`;
         
+        this.cellEventListeners(cell);
+        
+        return cell;
+    },
+
+    cellEventListeners(cell) {
         cell.addEventListener('click', (event) => {
             this.cellLeftClickHandler(event);
         });
@@ -125,12 +136,10 @@ const minesweeper = {
         cell.addEventListener('touchend', (event) => {
             this.cellTouchEndHandler(event);
         });
-        
-        return cell;
     },
 
     // -------------------------- //
-    // -----   Game Logic   ----- //
+    // -----   Game Start   ----- //
     // -------------------------- //
 
     gameModes: [
@@ -160,35 +169,306 @@ const minesweeper = {
         }
 
         this.generatePlayfield(this.size);
+
+        this.logic.init(this.size, this.mines);
     },
+
+    // ------------------------------------ //
+    // -----   Click/Touch Handling   ----- //
+    // ------------------------------------ //
 
     cellLeftClickHandler(event) {
         event.preventDefault();
+
         const x = event.target.dataset.x;
         const y = event.target.dataset.y;
-        alert('x: ' + x + ', y: ' + y);
+
+        result = this.logic.sweep(x, y);
+        const mineHit = result.mineHit;
+        const minesAround = result.minesAround;
+        const emptyCells = result.emptyCells;
+        const mines = result.mines;
+
+        if (mineHit) {
+            this.logic.gameLost(event, mines);
+        } else {
+            this.logic.uncoverCell(x, y, minesAround);
+            for (const cell of emptyCells) {
+                this.logic.uncoverCell(cell.x, cell.y, cell.minesAround);
+            }
+            if (this.logic.userHasWon()) {
+                this.logic.gameWon();
+            }
+        }
     },
 
     cellRightClickHandler(event) {
         event.preventDefault();
-        const x = event.target.dataset.x;
-        const y = event.target.dataset.y;
-        alert('right click x: ' + x + ', y: ' + y);
+
+        event.target.classList.toggle('symbol-f');
     },
 
     cellTouchStartHandler(event) {
         event.preventDefault();
+
         this.touchStartTime = new Date().getTime();
     },
 
     cellTouchEndHandler(event) {
         event.preventDefault();
+
         const touchDuration = new Date().getTime() - this.touchStartTime;
         if (touchDuration < 500) {
             this.cellLeftClickHandler(event);
         } else {
             this.cellRightClickHandler(event);
         }
+    }
+
+};
+
+// -------------------------------------------------- //
+// -------------------------------------------------- //
+// -------------------------------------------------- //
+
+const localLogic = {
+
+    // ----------------------------- //
+    // -----   Field Filling   ----- //
+    // ----------------------------- //
+
+    init(size, mines) {
+        this.field = [];
+        this.size = size;
+        this.mines = mines;
+        this.moves = 0;
+        this.uncoveredCells = [];
+        
+        for (let row = 0; row < size; row++) {
+            fieldRow = [];
+            for (let col = 0; col < size; col++) {
+                fieldRow.push(false);
+            }
+            this.field.push(fieldRow);
+        }
+
+        // todo funktion machen
+        for (let row = 0; row < size; row++) {
+            fieldRow = [];
+            for (let col = 0; col < size; col++) {
+                fieldRow.push(false);
+            }
+            this.uncoveredCells.push(fieldRow);
+        }
     },
+
+    // ------------------------------- //
+    // -----   Move Processing   ----- //
+    // ------------------------------- //
+
+    sweep(x, y) {
+        x = parseInt(x);
+        y = parseInt(y);
+        const mineHit = this.field[x][y];
+
+        if (!mineHit) {
+            var minesAround = this.countMinesAround(x, y);
+        }
+
+        if (this.moves === 0) {
+            this.placeMines(x, y);
+        }
+        this.moves++;
+
+        return {
+            mineHit: mineHit,
+            minesAround: minesAround,
+            emptyCells: minesAround === 0 ? this.getEmptyCells(x, y) : [],
+            mines: mineHit ? this.getMines() : []
+        }
+    },
+
+    // ---------------------------- //
+    // -----   Mine Placing   ----- //
+    // ---------------------------- //
+
+    placeMines(x, y) {
+        for (let i = 0; i < this.mines; i++) {
+            this.placeSingleMine(x, y);
+        }
+    },
+
+    placeSingleMine(x, y) {
+        while (true) {
+            tryX = Math.floor(Math.random() * this.size);
+            tryY = Math.floor(Math.random() * this.size);
+
+            if (tryX === x && tryY === y || this.field[tryX][tryY]) {
+                continue;
+            }
+
+            this.field[tryX][tryY] = true;
+            return;
+        }
+    },
+
+    // ------------------------------- //
+    // -----   Cell Uncovering   ----- //
+    // ------------------------------- //
+
+    getCell(x, y) {
+        return document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+    },
+
+    uncoverCell(x, y, symbol) {
+        this.getCell(x, y).classList.remove('covered');
+
+        if (symbol) {
+            this.getCell(x, y).classList.add(`symbol-${symbol}`);
+        }
+
+        this.uncoveredCells[x][y] = true;
+    },
+
+    // case: no mine hit
+
+    countMinesAround(x, y) {
+        let minesAround = 0;
+
+        for (let dX = -1; dX <= 1; dX++) {
+            for (let dY = -1; dY <= 1; dY++) {
+                if (this.accessCellSafely(x + dX, y + dY)) {
+                    minesAround++;
+                }
+            }
+        }
+
+        return minesAround;
+    },
+
+    accessCellSafely(x, y) {
+        if (x < 0 || x >= this.size || y < 0 || y >= this.size) {
+            return undefined;
+        } else {
+            return this.field[x][y];
+        }
+    },
+
+    // case: no mine hit and no mines around
+
+    getEmptyCells(x, y) {
+        const toDo = [];
+        const done = [];
+        
+        toDo.push({
+            x: x,
+            y: y,
+            minesAround: 0
+        });
+
+        while (toDo.length) {
+            const current = toDo.shift();
+            done.push(current);
+            const neighbors = this.getNeighbors(current.x, current.y);
+            for (const n of neighbors) {
+                if (this.isInList(done, n)) {
+                    continue;
+                }
+                if (n.minesAround) {
+                    done.push(n);
+                    continue;
+                }
+                if (!this.isInList(toDo, n)) {
+                    toDo.push(n);
+                }
+            }
+        }
+        
+        return done;
+    },
+
+    getNeighbors(x, y) {
+        const neighbors = [];
+
+        for (let dX = -1; dX <= 1; dX++) {
+            for (let dY = -1; dY <= 1; dY++) {
+                const cell = this.accessCellSafely(x + dX, y + dY);
+                if (cell === false) {
+                    neighbors.push({
+                        x: x + dX,
+                        y: y + dY,
+                        minesAround: this.countMinesAround(x + dX, y + dY)
+                    });
+                }
+            }
+        }
+
+        return neighbors;
+    },
+
+    isInList(list, element) {
+        return list.some(item => item.x === element.x && item.y === element.y);
+    },
+
+    // case: mine hit
+
+    getMines() {
+        const mines = [];
+
+        for (let x = 0; x < this.size; x++) {
+            for (let y = 0; y < this.size; y++) {
+                if (this.field[x][y]) {
+                    mines.push({
+                        x: x,
+                        y: y
+                    });
+                }
+            }
+        }
+
+        return mines;
+    },
+
+    // ------------------------ //
+    // -----   Game End   ----- //
+    // ------------------------ //
+
+    userHasWon() {
+        let count = 0;
+
+        for (let x = 0; x < this.size; x++) {
+            for (let y = 0; y < this.size; y++) {
+                if (this.uncoveredCells[x][y]) {
+                    count++;
+                }
+            }
+        }
+
+        return count === this.size * this.size - this.mines;
+    },
+
+    gameLost(event, mines) {
+        event.target.id = 'mine-hit';
+        for (const m of mines) {
+            this.uncoverCell(m.x, m.y, 'm');
+        }
+        this.displayOverlay('Game Over');
+    },
+
+    gameWon() {
+        this.displayOverlay('Victory');
+    },
+
+    displayOverlay(text) {
+        const overlay = document.createElement('div');
+        overlay.id = 'overlay';
+
+        const div = document.createElement('div');
+        div.innerText = text;
+        overlay.appendChild(div);
+        
+        const main = document.querySelector('main');
+        main.appendChild(overlay);
+    }
 
 };
