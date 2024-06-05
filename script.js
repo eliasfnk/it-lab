@@ -183,7 +183,7 @@ const minesweeper = {
         const x = event.target.dataset.x;
         const y = event.target.dataset.y;
 
-        result = this.logic.sweep(x, y);
+        const result = this.logic.sweep(x, y);
         const mineHit = result.mineHit;
         const minesAround = result.minesAround;
         const emptyCells = result.emptyCells;
@@ -238,28 +238,23 @@ const localLogic = {
     // ----------------------------- //
 
     init(size, mines) {
-        this.field = [];
         this.size = size;
         this.mines = mines;
         this.moves = 0;
-        this.uncoveredCells = [];
-        
-        for (let row = 0; row < size; row++) {
-            fieldRow = [];
-            for (let col = 0; col < size; col++) {
-                fieldRow.push(false);
-            }
-            this.field.push(fieldRow);
-        }
+        this.field = this.createArray(size);
+        this.uncoveredCells = this.createArray(size);
+    },
 
-        // todo funktion machen
+    createArray(size) {
+        const array = [];
         for (let row = 0; row < size; row++) {
-            fieldRow = [];
+            const fieldRow = [];
             for (let col = 0; col < size; col++) {
                 fieldRow.push(false);
             }
-            this.uncoveredCells.push(fieldRow);
+            array.push(fieldRow);
         }
+        return array;
     },
 
     // ------------------------------- //
@@ -271,8 +266,9 @@ const localLogic = {
         y = parseInt(y);
         const mineHit = this.field[x][y];
 
+        let minesAround;
         if (!mineHit) {
-            var minesAround = this.countMinesAround(x, y);
+            minesAround = this.countMinesAround(x, y);
         }
 
         if (this.moves === 0) {
@@ -300,8 +296,8 @@ const localLogic = {
 
     placeSingleMine(x, y) {
         while (true) {
-            tryX = Math.floor(Math.random() * this.size);
-            tryY = Math.floor(Math.random() * this.size);
+            const tryX = Math.floor(Math.random() * this.size);
+            const tryY = Math.floor(Math.random() * this.size);
 
             if (tryX === x && tryY === y || this.field[tryX][tryY]) {
                 continue;
