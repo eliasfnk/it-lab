@@ -8,6 +8,7 @@ const minesweeper = {
 
     init() {
         this.logic = localLogic;
+        //this.logic = remoteLogic;
         this.generateBody();
         this.newGame('small');
     },
@@ -160,7 +161,7 @@ const minesweeper = {
         },
     ],
 
-    newGame(gameMode) {
+    async newGame(gameMode) {
         for (const mode of this.gameModes) {
             if (mode.name == gameMode) {
                 this.size = mode.size;
@@ -170,20 +171,20 @@ const minesweeper = {
 
         this.generatePlayfield(this.size);
 
-        this.logic.init(this.size, this.mines);
+        await this.logic.init(this.size, this.mines);
     },
 
     // ------------------------------------ //
     // -----   Click/Touch Handling   ----- //
     // ------------------------------------ //
 
-    cellLeftClickHandler(event) {
+    async cellLeftClickHandler(event) {
         event.preventDefault();
 
         const x = event.target.dataset.x;
         const y = event.target.dataset.y;
 
-        const result = this.logic.sweep(x, y);
+        const result = await this.logic.sweep(x, y);
         const mineHit = result.mineHit;
         const minesAround = result.minesAround;
         const emptyCells = result.emptyCells;
@@ -227,9 +228,77 @@ const minesweeper = {
 
 };
 
+
+
+
+
 // -------------------------------------------------- //
 // -------------------------------------------------- //
 // -------------------------------------------------- //
+
+
+
+
+
+/* const remoteLogic = {
+
+    // ----------------------------- //
+    // -----   Field Filling   ----- //
+    // ----------------------------- //
+
+    async init(size, mines) {
+        this.serverUrl = `?request=init&size=${size}&mines=${mines}&userid=elfiit00`;
+
+
+        await this.fetchAndDecode();
+    },
+
+    async fetchAndDecode() {
+        
+        return fetch(this.serverUrl + `?request=init&size=${size}&mines=${mines}&userid=elfiit00`);
+        then Response.json();
+    },
+
+    // ------------------------------- //
+    // -----   Move Processing   ----- //
+    // ------------------------------- //
+
+    async sweep(x, y) {
+        x = parseInt(x);
+        y = parseInt(y);
+        const mineHit = this.field[x][y];
+
+        let minesAround;
+        if (!mineHit) {
+            minesAround = this.countMinesAround(x, y);
+        }
+
+        if (this.moves === 0) {
+            this.placeMines(x, y);
+        }
+        this.moves++;
+
+        return {
+            mineHit: mineHit,
+            minesAround: minesAround,
+            emptyCells: minesAround === 0 ? this.getEmptyCells(x, y) : [],
+            mines: mineHit ? this.getMines() : []
+        }
+    },
+
+}; */
+
+
+
+
+
+// -------------------------------------------------- //
+// -------------------------------------------------- //
+// -------------------------------------------------- //
+
+
+
+
 
 const localLogic = {
 
@@ -237,7 +306,7 @@ const localLogic = {
     // -----   Field Filling   ----- //
     // ----------------------------- //
 
-    init(size, mines) {
+    async init(size, mines) {
         this.size = size;
         this.mines = mines;
         this.moves = 0;
@@ -261,7 +330,7 @@ const localLogic = {
     // -----   Move Processing   ----- //
     // ------------------------------- //
 
-    sweep(x, y) {
+    async sweep(x, y) {
         x = parseInt(x);
         y = parseInt(y);
         const mineHit = this.field[x][y];
