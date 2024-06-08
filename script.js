@@ -3,12 +3,9 @@ window.addEventListener('load', () => {
 });
 
 const minesweeper = {
-    
-
 
     init() {
-        this.logic = localLogic;
-        //this.logic = remoteLogic;
+        this.logic = remoteLogic;
         this.generateBody();
         this.newGame('small');
     },
@@ -185,19 +182,15 @@ const minesweeper = {
         const y = event.target.dataset.y;
 
         const result = await this.logic.sweep(x, y);
-        const mineHit = result.mineHit;
-        const minesAround = result.minesAround;
-        const emptyCells = result.emptyCells;
-        const mines = result.mines;
 
-        if (mineHit) {
-            this.logic.gameLost(event, mines);
+        if (result.minehit) {
+            this.logic.gameLost(event, result.mines);
         } else {
-            this.logic.uncoverCell(x, y, minesAround);
-            for (const cell of emptyCells) {
+            this.logic.uncoverCell(x, y, result.minesAround);
+            for (const cell of result.emptyCells) {
                 this.logic.uncoverCell(cell.x, cell.y, cell.minesAround);
             }
-            if (this.logic.userHasWon()) {
+            if (result.userwins) {
                 this.logic.gameWon();
             }
         }
@@ -240,23 +233,21 @@ const minesweeper = {
 
 
 
-/* const remoteLogic = {
+const remoteLogic = {
 
     // ----------------------------- //
     // -----   Field Filling   ----- //
     // ----------------------------- //
 
     async init(size, mines) {
-        this.serverUrl = `?request=init&size=${size}&mines=${mines}&userid=elfiit00`;
-
-
-        await this.fetchAndDecode();
+        this.serverUrl = 'https://www2.hs-esslingen.de/~melcher/it/minesweeper/?';
+        const request = `request=init&size=${size}&mines=${mines}&userid=elfiit00`;
+        const response = await this.fetchAndDecode(request);
+        this.token = response.token;
     },
 
-    async fetchAndDecode() {
-        
-        return fetch(this.serverUrl + `?request=init&size=${size}&mines=${mines}&userid=elfiit00`);
-        then Response.json();
+    async fetchAndDecode(request) {
+        return fetch(this.serverUrl + request).then(response => response.json());
     },
 
     // ------------------------------- //
@@ -264,117 +255,8 @@ const minesweeper = {
     // ------------------------------- //
 
     async sweep(x, y) {
-        x = parseInt(x);
-        y = parseInt(y);
-        const mineHit = this.field[x][y];
-
-        let minesAround;
-        if (!mineHit) {
-            minesAround = this.countMinesAround(x, y);
-        }
-
-        if (this.moves === 0) {
-            this.placeMines(x, y);
-        }
-        this.moves++;
-
-        return {
-            mineHit: mineHit,
-            minesAround: minesAround,
-            emptyCells: minesAround === 0 ? this.getEmptyCells(x, y) : [],
-            mines: mineHit ? this.getMines() : []
-        }
-    },
-
-}; */
-
-
-
-
-
-// -------------------------------------------------- //
-// -------------------------------------------------- //
-// -------------------------------------------------- //
-
-
-
-
-
-const localLogic = {
-
-    // ----------------------------- //
-    // -----   Field Filling   ----- //
-    // ----------------------------- //
-
-    async init(size, mines) {
-        this.size = size;
-        this.mines = mines;
-        this.moves = 0;
-        this.field = this.createArray(size);
-        this.uncoveredCells = this.createArray(size);
-    },
-
-    createArray(size) {
-        const array = [];
-        for (let row = 0; row < size; row++) {
-            const fieldRow = [];
-            for (let col = 0; col < size; col++) {
-                fieldRow.push(false);
-            }
-            array.push(fieldRow);
-        }
-        return array;
-    },
-
-    // ------------------------------- //
-    // -----   Move Processing   ----- //
-    // ------------------------------- //
-
-    async sweep(x, y) {
-        x = parseInt(x);
-        y = parseInt(y);
-        const mineHit = this.field[x][y];
-
-        let minesAround;
-        if (!mineHit) {
-            minesAround = this.countMinesAround(x, y);
-        }
-
-        if (this.moves === 0) {
-            this.placeMines(x, y);
-        }
-        this.moves++;
-
-        return {
-            mineHit: mineHit,
-            minesAround: minesAround,
-            emptyCells: minesAround === 0 ? this.getEmptyCells(x, y) : [],
-            mines: mineHit ? this.getMines() : []
-        }
-    },
-
-    // ---------------------------- //
-    // -----   Mine Placing   ----- //
-    // ---------------------------- //
-
-    placeMines(x, y) {
-        for (let i = 0; i < this.mines; i++) {
-            this.placeSingleMine(x, y);
-        }
-    },
-
-    placeSingleMine(x, y) {
-        while (true) {
-            const tryX = Math.floor(Math.random() * this.size);
-            const tryY = Math.floor(Math.random() * this.size);
-
-            if (tryX === x && tryY === y || this.field[tryX][tryY]) {
-                continue;
-            }
-
-            this.field[tryX][tryY] = true;
-            return;
-        }
+        const request = `request=sweep&token=${this.token}&x=${x}&y=${y}`;
+        return this.fetchAndDecode(request);
     },
 
     // ------------------------------- //
@@ -391,126 +273,11 @@ const localLogic = {
         if (symbol) {
             this.getCell(x, y).classList.add(`symbol-${symbol}`);
         }
-
-        this.uncoveredCells[x][y] = true;
-    },
-
-    // case: no mine hit
-
-    countMinesAround(x, y) {
-        let minesAround = 0;
-
-        for (let dX = -1; dX <= 1; dX++) {
-            for (let dY = -1; dY <= 1; dY++) {
-                if (this.accessCellSafely(x + dX, y + dY)) {
-                    minesAround++;
-                }
-            }
-        }
-
-        return minesAround;
-    },
-
-    accessCellSafely(x, y) {
-        if (x < 0 || x >= this.size || y < 0 || y >= this.size) {
-            return undefined;
-        } else {
-            return this.field[x][y];
-        }
-    },
-
-    // case: no mine hit and no mines around
-
-    getEmptyCells(x, y) {
-        const toDo = [];
-        const done = [];
-        
-        toDo.push({
-            x: x,
-            y: y,
-            minesAround: 0
-        });
-
-        while (toDo.length) {
-            const current = toDo.shift();
-            done.push(current);
-            const neighbors = this.getNeighbors(current.x, current.y);
-            for (const n of neighbors) {
-                if (this.isInList(done, n)) {
-                    continue;
-                }
-                if (n.minesAround) {
-                    done.push(n);
-                    continue;
-                }
-                if (!this.isInList(toDo, n)) {
-                    toDo.push(n);
-                }
-            }
-        }
-        
-        return done;
-    },
-
-    getNeighbors(x, y) {
-        const neighbors = [];
-
-        for (let dX = -1; dX <= 1; dX++) {
-            for (let dY = -1; dY <= 1; dY++) {
-                const cell = this.accessCellSafely(x + dX, y + dY);
-                if (cell === false) {
-                    neighbors.push({
-                        x: x + dX,
-                        y: y + dY,
-                        minesAround: this.countMinesAround(x + dX, y + dY)
-                    });
-                }
-            }
-        }
-
-        return neighbors;
-    },
-
-    isInList(list, element) {
-        return list.some(item => item.x === element.x && item.y === element.y);
-    },
-
-    // case: mine hit
-
-    getMines() {
-        const mines = [];
-
-        for (let x = 0; x < this.size; x++) {
-            for (let y = 0; y < this.size; y++) {
-                if (this.field[x][y]) {
-                    mines.push({
-                        x: x,
-                        y: y
-                    });
-                }
-            }
-        }
-
-        return mines;
     },
 
     // ------------------------ //
     // -----   Game End   ----- //
     // ------------------------ //
-
-    userHasWon() {
-        let count = 0;
-
-        for (let x = 0; x < this.size; x++) {
-            for (let y = 0; y < this.size; y++) {
-                if (this.uncoveredCells[x][y]) {
-                    count++;
-                }
-            }
-        }
-
-        return count === this.size * this.size - this.mines;
-    },
 
     gameLost(event, mines) {
         event.target.id = 'mine-hit';
